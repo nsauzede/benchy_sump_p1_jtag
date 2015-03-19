@@ -42,27 +42,12 @@ entity BENCHY_sa_SumpBlaze_LogicAnalyzer8_jtag is
 	);	
 	port(
 		clk_32Mhz : in std_logic;
+		clk_out : out std_logic;
 		--extClockIn : in std_logic;
 --		extClockOut : out std_logic;
 		--extTriggerIn : in std_logic;
 		--extTriggerOut : out std_logic;
-		--la_input : in std_logic_vector(31 downto 0);
-		la0	: in std_logic;
-		la1	: in std_logic;
-		la2	: in std_logic;
-		la3	: in std_logic;
-		la4	: in std_logic;
-		la5	: in std_logic;
-		la6	: in std_logic;
-		la7	: in std_logic
---		rx : in std_logic;
---		tx : out std_logic
---		miso : out std_logic;
---		mosi : in std_logic;
---		sclk : in std_logic;
---		cs : in std_logic
---		dataReady : out std_logic;
---		adc_cs_n : inout std_logic;
+		la_input2 : in std_logic_vector(7 downto 0)
 		--armLED : out std_logic;
 		--triggerLED : out std_logic
 	);
@@ -178,24 +163,14 @@ architecture behavioral of BENCHY_sa_SumpBlaze_LogicAnalyzer8_jtag is
 	constant SPEED	: std_logic_vector (1 downto 0) := "00";	--Sets the speed for UART communications
 	
 begin
-	--la_input <= (others => '0');
-	la_input(0) <= la0;
-	la_input(1) <= la1;
-	la_input(2) <= la2;
-	la_input(3) <= la3;
-	la_input(4) <= la4;
-	la_input(5) <= la5;
-	la_input(6) <= la6;
-	la_input(7) <= la7;
-
-
---	adc_cs_n <= '1';		--Disables ADC
+	la_input(7 downto 0) <= la_input2;
 	
 	Inst_clockman: clockman
 	port map(
 		clkin => clk_32Mhz,
 		clk0 => clock
 	);
+	clk_out <= clock;
 	
 	Inst_bscan_spi: bscan_spi PORT MAP(
 		SPI_MISO => miso,

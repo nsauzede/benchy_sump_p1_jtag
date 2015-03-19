@@ -1,0 +1,7 @@
+address 000
+reset:
+  load s0,55
+  output s0,42
+  load s0,aa
+  output s0,42
+  jump reset
