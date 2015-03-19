@@ -40,35 +40,45 @@ end aaatop;
 
 architecture Behavioral of aaatop is
 signal la	: std_logic_vector(7 downto 0);
-	signal cnt : std_logic_vector(31 downto 0) := (others => '0');
-	
+
+signal address : std_logic_vector(9 downto 0);
+signal instruction : std_logic_vector(17 downto 0);
+signal port_id : std_logic_vector(7 downto 0);
+signal write_strobe : std_logic;
+signal out_port : std_logic_vector(7 downto 0);
+signal read_strobe : std_logic;
+signal in_port : std_logic_vector(7 downto 0);
+signal interrupt : std_logic;
+signal interrupt_ack : std_logic;
+signal picoreset : std_logic;
+signal clk2 : std_logic;
 begin
 	sump0 : entity work.BENCHY_sa_SumpBlaze_LogicAnalyzer8_jtag
 	port map(
 		clk_32Mhz => clk,
-		--extClockIn : in std_logic;
---		extClockOut : out std_logic;
-		--extTriggerIn : in std_logic;
-		--extTriggerOut : out std_logic;
-		--la_input : in std_logic_vector(31 downto 0);
-		la0 => la(0),
-		la1 => la(1),
-		la2 => la(2),
-		la3 => la(3),
-		la4 => la(4),
-		la5 => la(5),
-		la6 => la(6),
-		la7 => la(7)
+		clk_out => clk2,
+		la_input2 => la
 		--armLED : out std_logic;
 		--triggerLED : out std_logic
 	);
---	w1a(7 downto 0) <= "ZZZZZZZZ";
---	la(7 downto 0) <= w1a(7 downto 0);
-	process(clk)
-	begin
-		if rising_edge(clk) then
-			cnt <= cnt + 1;
-		end if;
-	end process;
-	la(7 downto 0) <= cnt(7 downto 0);
+	la <= out_port;
+	kcpsm0: entity work.kcpsm3 Port map(
+		address => address,
+		instruction => instruction,
+		port_id => port_id,
+		write_strobe => write_strobe,
+		out_port => out_port,
+		read_strobe => read_strobe,
+		in_port => in_port,
+		interrupt => interrupt,
+		interrupt_ack => interrupt_ack,
+		reset => picoreset,
+		clk => clk2
+	);
+	rom0 : entity work.rom Port map(
+		address => address,
+		instruction => instruction,
+		proc_reset => picoreset,
+		clk => clk2
+	);
 end Behavioral;
