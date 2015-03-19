@@ -3,4 +3,4 @@ syntax: glob
 
 *~
 iseconfig
-working
+working/*
