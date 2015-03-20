@@ -63,6 +63,8 @@ signal clk2 : std_logic;
 	signal cnt25 : std_logic_vector(2 downto 0);
 
 	signal LED : std_logic_vector(7 downto 0);
+	signal leds : std_logic_vector(3 downto 0);
+	signal buttons : std_logic_vector(3 downto 0);
 begin
 	sump0 : entity work.BENCHY_sa_SumpBlaze_LogicAnalyzer8_jtag
 	port map(
@@ -129,4 +131,11 @@ begin
 		SSEL => spi_csn,
 		LED => LED
 	);
+	butled0: entity work.wingbutled
+	Port map(
+		io => w1b(7 downto 0),
+		buttons => buttons,
+		leds => leds
+	);
+	leds <= LED(3 downto 0);
 end Behavioral;
