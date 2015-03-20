@@ -1,7 +1,12 @@
 address 000
 reset:
+  load s0,00
+  output s0,f4
+  load s0,fe
+  output s0,f0
+loop:
   load s0,55
-  output s0,42
+  output s0,f2
   load s0,aa
-  output s0,42
-  jump reset
+  output s0,f2
+  jump loop
