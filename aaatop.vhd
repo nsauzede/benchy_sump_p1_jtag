@@ -39,6 +39,7 @@ entity aaatop is
 end aaatop;
 
 architecture Behavioral of aaatop is
+--signal la	: std_logic_vector(31 downto 0);
 signal la	: std_logic_vector(7 downto 0);
 
 signal address : std_logic_vector(9 downto 0);
@@ -52,6 +53,14 @@ signal interrupt : std_logic;
 signal interrupt_ack : std_logic;
 signal picoreset : std_logic;
 signal clk2 : std_logic;
+
+signal buttons : STD_LOGIC_VECTOR (3 downto 0);
+signal leds : STD_LOGIC_VECTOR (3 downto 0);
+
+signal cntuart : STD_LOGIC_VECTOR (3 downto 0);
+signal en_16_x_baud : std_logic;
+signal write_buffer : std_logic;
+signal the_tx : std_logic;
 begin
 	sump0 : entity work.BENCHY_sa_SumpBlaze_LogicAnalyzer8_jtag
 	port map(
@@ -61,7 +70,15 @@ begin
 		--armLED : out std_logic;
 		--triggerLED : out std_logic
 	);
-	la <= out_port;
+--	la <= out_port;
+--	la <= en_16_x_baud & write_buffer & out_port(5 downto 0);
+	la <= "00000" & en_16_x_baud & write_buffer & the_tx;
+--	la <= port_id;
+--	la <= 
+--		"00" & en_16_x_baud & write_buffer & "00" & write_strobe & read_strobe & 
+--		port_id & 
+--		in_port & 
+--		out_port;
 	kcpsm0: entity work.kcpsm3 Port map(
 		address => address,
 		instruction => instruction,
@@ -79,6 +96,45 @@ begin
 		address => address,
 		instruction => instruction,
 		proc_reset => picoreset,
+		clk => clk2
+	);
+	butled0: entity work.wingbutled
+	Port map(
+		io => w1b(7 downto 0),
+		buttons => buttons,
+		leds => leds
+	);
+--	leds <= out_port(3 downto 0);
+	leds <= write_buffer & out_port(2 downto 0);
+	process(clk2)
+	begin
+		if rising_edge(clk2) then
+			cntuart <= cntuart + 1;
+		end if;
+	end process;
+	en_16_x_baud <= cntuart(3);
+	tx <= the_tx;
+	uart_rx0: entity work.uart_rx
+	Port map(
+		serial_in => rx,
+		data_out => in_port,
+		read_buffer => read_strobe,
+		reset_buffer => '0',
+		en_16_x_baud => en_16_x_baud,
+		buffer_data_present => interrupt,
+		buffer_full => open,
+		buffer_half_full => open,
+		clk => clk2
+	);
+	write_buffer <= write_strobe and port_id(7);
+	uart_tx0 : entity work.uart_tx Port map(
+		data_in => out_port,
+		write_buffer => write_buffer,
+		reset_buffer => '0',
+		en_16_x_baud => en_16_x_baud,
+		serial_out => the_tx,
+		buffer_full => open,
+		buffer_half_full => open,
 		clk => clk2
 	);
 end Behavioral;

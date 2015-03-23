@@ -1,7 +1,60 @@
-address 000
-reset:
-  load s0,55
-  output s0,42
-  load s0,aa
-  output s0,42
-  jump reset
+; Important : each instruction executes in 2 cycles = Tclk*2
+	CONSTANT delay_1us_constant,18		; 2+4*A+2=100 => A=0x18 for clk=100MHz
+CONSTANT uart_port,80
+CONSTANT leds_port,00
+
+NAMEREG s0,reg0
+NAMEREG s1,reg1
+NAMEREG s2,reg2
+NAMEREG s3,reg3
+NAMEREG s4,reg4
+NAMEREG sE,leds
+
+ADDRESS 000
+coldstart:
+	load leds,41
+	output leds,uart_port
+	call delay_1s
+	jump coldstart
+	
+	load leds,55
+	ENABLE INTERRUPT
+loop:
+	output leds,leds_port
+	jump loop
+
+delay_1us: LOAD reg0,delay_1us_constant	; routine takes 2+4*A+2 cycles
+_wait_1us: SUB reg0,01			; (2+4*A+2)*Tclk=10e-6s => A=(Fclk/10e6-4)/4
+	JUMP NZ,_wait_1us			; => A=7 for Fclk=32MHz
+	RETURN
+delay_40us: LOAD reg1,22		; routine takes 2+(2+(4+4*A)+4)*B+2 cycles
+_wait_40us: CALL delay_1us		; (2+(2+(4+4*A)+4)*B+2)*Tclk=40e-6s
+	SUB reg1,01					; => B=(Fclk/25000-4)/(10+4*A)=33.578~=34=0x22
+	JUMP NZ,_wait_40us
+	RETURN
+delay_1ms: LOAD reg2,19			;25 x 40us = 1ms
+_wait_1ms: CALL delay_40us		; 1000000=A*40000+(2+3A)*62.5
+	SUB reg2,01					; A=(1000000-2*62.5)/(40000+3*62.5)
+	JUMP NZ,_wait_1ms			; A=24.880~=25=0x19
+	RETURN
+delay_20ms: LOAD reg3,14			;20 x 1ms = 20ms  (20=0x14)
+_wait_20ms: CALL delay_1ms
+	SUB reg3,01
+	JUMP NZ,_wait_20ms
+	RETURN
+delay_1s: LOAD reg4,32				;50 x 20ms = 1000ms (50=0x32)
+_wait_1s: CALL delay_20ms
+	SUB reg4,01
+	JUMP NZ,_wait_1s
+	RETURN
+
+isr:
+	load leds,42
+	output leds,uart_port
+	input leds,uart_port
+;	sub leds,30
+;	load leds,aa
+	returni ENABLE
+
+ADDRESS 3ff
+	jump isr

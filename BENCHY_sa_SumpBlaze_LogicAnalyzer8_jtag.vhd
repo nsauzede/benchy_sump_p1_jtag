@@ -48,6 +48,7 @@ entity BENCHY_sa_SumpBlaze_LogicAnalyzer8_jtag is
 		--extTriggerIn : in std_logic;
 		--extTriggerOut : out std_logic;
 		la_input2 : in std_logic_vector(7 downto 0)
+--		la_input2 : in std_logic_vector(31 downto 0)
 		--armLED : out std_logic;
 		--triggerLED : out std_logic
 	);
@@ -164,6 +165,7 @@ architecture behavioral of BENCHY_sa_SumpBlaze_LogicAnalyzer8_jtag is
 	
 begin
 	la_input(7 downto 0) <= la_input2;
+--	la_input <= la_input2;
 	
 	Inst_clockman: clockman
 	port map(
